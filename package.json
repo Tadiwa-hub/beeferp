@@ -1,0 +1,24 @@
+{
+  "name": "beeferp",
+  "version": "1.0.0",
+  "description": "```\r beeferp/\r ├── backend/                    # Node.js Express API\r │   ├── config/\r │   ├── routes/\r │   ├── controllers/\r │   ├── middleware/\r │   ├── services/\r │   ├── utils/\r │   ├── .env.example\r │   ├── package.json\r │   └── server.js\r ├── frontend/                   # React + Vite UI\r │   ├── src/\r │   ├── public/\r │   ├── .env.example\r │   ├── package.json\r │   ├── vite.config.js\r │   └── index.html\r └── README.md\r ```",
+  "main": "animals-controller.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "nodemon": "^3.1.14",
+    "pg": "^8.21.0"
+  }
+}
