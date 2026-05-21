@@ -5,9 +5,8 @@
 
 import axios from 'axios';
 
-// In production (Cloudflare), use the VITE_API_URL environment variable.
-// During local dev without VITE_API_URL, use empty string to rely on Vite proxy.
-const API_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : '';
+// Hardcoding the production Render URL to bypass Cloudflare environment variable injection issues
+const API_URL = 'https://beeferp.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_URL,
