@@ -5,9 +5,9 @@
 
 import axios from 'axios';
 
-// Use relative URL so Vite's proxy handles routing to the backend.
-// This prevents Windows Firewall issues on port 5000 when testing from mobile.
-const API_URL = import.meta.env.VITE_API_URL || '';
+// In production (Cloudflare), use the VITE_API_URL environment variable.
+// During local dev without VITE_API_URL, use empty string to rely on Vite proxy.
+const API_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : '';
 
 const apiClient = axios.create({
   baseURL: API_URL,
