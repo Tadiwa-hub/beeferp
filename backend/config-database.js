@@ -20,28 +20,27 @@ try {
 
 const { Pool } = pg;
 
-// Custom robust DNS lookup function that queries custom DNS servers directly for AAAA (IPv6)
-// This makes host resolution completely bulletproof and immune to Windows getaddrinfo bugs!
+// Custom robust DNS lookup function that forces IPv4 (A) resolution first
+// Render and many cloud hosts do not support outbound IPv6 correctly, causing ENETUNREACH errors.
 const robustLookup = (hostname, options, callback) => {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return dns.lookup(hostname, options, callback);
   }
 
-  // Directly query DNS servers for AAAA (IPv6) records since Supabase is IPv6-only
-  dns.resolve(hostname, 'AAAA', (err, addresses) => {
-    if (err || !addresses || addresses.length === 0) {
-      // Try resolving as IPv4 (A) just in case
-      dns.resolve(hostname, 'A', (err2, addresses2) => {
-        if (err2 || !addresses2 || addresses2.length === 0) {
-          // Absolute fallback to OS default resolver
-          return dns.lookup(hostname, options, callback);
-        }
-        callback(null, addresses2[0], 4);
-      });
-      return;
+  // FORCE IPv4 Resolution for Render Cloud compatibility
+  dns.resolve(hostname, 'A', (err, addresses) => {
+    if (!err && addresses && addresses.length > 0) {
+      return callback(null, addresses[0], 4);
     }
-    // Return the resolved IPv6 address
-    callback(null, addresses[0], 6);
+    
+    // Fallback to IPv6 if IPv4 fails (e.g. some strict Supabase setups)
+    dns.resolve(hostname, 'AAAA', (err2, addresses2) => {
+      if (!err2 && addresses2 && addresses2.length > 0) {
+        return callback(null, addresses2[0], 6);
+      }
+      // Absolute fallback to OS default resolver
+      return dns.lookup(hostname, options, callback);
+    });
   });
 };
 
