@@ -6,68 +6,86 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
 import dns from 'dns';
+import { promisify } from 'util';
 
 dotenv.config();
 
-// FORCE Node.js to prioritize IPv4 over IPv6 globally.
-// This is the definitive fix for "ENETUNREACH" errors on Render and other IPv4-only hosts.
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
+// Pre-resolve host to IPv4 to prevent ENETUNREACH on IPv6-only hostnames
+const resolve4 = promisify(dns.resolve4);
+
+const getIpv4Host = async (host) => {
+  if (!host || host === 'localhost' || host === '127.0.0.1' || host.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    return host;
+  }
+  try {
+    const addresses = await resolve4(host);
+    console.log(`📡 Resolved ${host} to IPv4: ${addresses[0]}`);
+    return addresses[0];
+  } catch (err) {
+    console.warn(`⚠️ IPv4 resolution failed for ${host}, falling back to original hostname:`, err.message);
+    return host;
+  }
+};
 
 const { Pool } = pg;
 
-// Support both full connection string (SUPABASE_URL) or individual DB_ variables
-const poolConfig = process.env.SUPABASE_URL 
-  ? { connectionString: process.env.SUPABASE_URL.split('?')[0] }
-  : {
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME,
-    };
+// We will initialize the pool inside a wrapper to allow for async DNS resolution
+let pool;
 
-// Create connection pool for Supabase with enforced SSL
-const pool = new Pool({
-  ...poolConfig,
-  ssl: {
-    rejectUnauthorized: false, // Required for Supabase
-  },
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
-});
+const initPool = async () => {
+  if (pool) return pool;
 
-// Connection event handlers
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client:', err.message);
-});
+  const originalHost = process.env.DB_HOST || (process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : '');
+  const ipv4Host = await getIpv4Host(originalHost);
 
-pool.on('connect', () => {
-  console.log('✓ Database pool connected');
-});
+  const poolConfig = process.env.SUPABASE_URL 
+    ? { connectionString: process.env.SUPABASE_URL.split('?')[0].replace(originalHost, ipv4Host) }
+    : {
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        host: ipv4Host,
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_NAME,
+      };
+
+  pool = new Pool({
+    ...poolConfig,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 15000,
+  });
+
+  pool.on('error', (err) => console.error('Unexpected error on idle client:', err.message));
+  pool.on('connect', () => console.log('✓ Database pool connected'));
+
+  return pool;
+};
+
+// Singleton pool instance for the app
+const getPool = async () => await initPool();
 
 /**
  * Execute query with connection pooling
  */
 export const query = async (text, params) => {
   const start = Date.now();
+  const activePool = await getPool();
   try {
-    const res = await pool.query(text, params);
+    const res = await activePool.query(text, params);
     const duration = Date.now() - start;
     console.log(`✓ Query executed (${duration}ms)`, { text: text.substring(0, 50), rows: res.rowCount });
     return res;
   } catch (error) {
     console.error('✗ Query error:', error.message);
-    
     if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
       const dbError = new Error('Database is temporarily unreachable. Please try again shortly.');
       dbError.status = 503;
       dbError.name = 'ServiceUnavailable';
       throw dbError;
     }
-    
     throw error;
   }
 };
@@ -93,7 +111,8 @@ export const getAll = async (text, params) => {
  */
 export const testConnection = async () => {
   try {
-    const result = await pool.query('SELECT NOW()');
+    const activePool = await getPool();
+    const result = await activePool.query('SELECT NOW()');
     console.log('✓ Database connection successful:', result.rows[0]);
     return true;
   } catch (error) {
@@ -102,12 +121,4 @@ export const testConnection = async () => {
   }
 };
 
-/**
- * Close pool gracefully
- */
-export const closePool = async () => {
-  await pool.end();
-  console.log('✓ Database pool closed');
-};
-
-export default pool;
+export default { query, getOne, getAll, testConnection };
