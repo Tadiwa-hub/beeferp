@@ -21,15 +21,24 @@ const ipv4Lookup = (hostname, options, callback) => {
 };
 
 // Support both full connection string (SUPABASE_URL) or individual DB_ variables
-const poolConfig = process.env.SUPABASE_URL 
-  ? { connectionString: process.env.SUPABASE_URL.split('?')[0] }
-  : {
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME,
-    };
+let poolConfig = {};
+
+if (process.env.SUPABASE_URL) {
+  const rawUrl = process.env.SUPABASE_URL.trim();
+  // Log a masked version for debugging
+  const maskedUrl = rawUrl.replace(/:([^:@]+)@/, ':****@');
+  console.log(`🔌 Attempting connection using SUPABASE_URL: ${maskedUrl}`);
+  poolConfig = { connectionString: rawUrl };
+} else {
+  console.log(`🔌 Attempting connection using individual DB_ variables to host: ${process.env.DB_HOST}`);
+  poolConfig = {
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME,
+  };
+}
 
 // Create connection pool with forced IPv4 lookup and SSL
 const pool = new Pool({
@@ -37,10 +46,10 @@ const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-  max: 20,
+  max: 15,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
-  lookup: ipv4Lookup, // The magic ingredient
+  connectionTimeoutMillis: 10000,
+  lookup: ipv4Lookup,
 });
 
 // Connection event handlers
