@@ -157,7 +157,11 @@ export const login = async (req, res) => {
       ...tokens,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('CRITICAL LOGIN ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      username: username
+    });
     res.status(error.status || 500).json({
       error: error.name || 'Internal Server Error',
       message: error.message,
