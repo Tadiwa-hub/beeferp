@@ -5,17 +5,32 @@
 
 import pg from 'pg';
 import dotenv from 'dotenv';
+import dns from 'dns';
 
 dotenv.config();
 
+// FORCE Node.js to prioritize IPv4 over IPv6 globally.
+// This is the definitive fix for "ENETUNREACH" errors on Render and other IPv4-only hosts.
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 const { Pool } = pg;
 
-// Clean connection string to prevent pg-connection-string from overriding rejectUnauthorized
-const dbConnectionString = process.env.SUPABASE_URL ? process.env.SUPABASE_URL.split('?')[0] : '';
+// Support both full connection string (SUPABASE_URL) or individual DB_ variables
+const poolConfig = process.env.SUPABASE_URL 
+  ? { connectionString: process.env.SUPABASE_URL.split('?')[0] }
+  : {
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432'),
+      database: process.env.DB_NAME,
+    };
 
-// Create connection pool for Supabase
+// Create connection pool for Supabase with enforced SSL
 const pool = new Pool({
-  connectionString: dbConnectionString,
+  ...poolConfig,
   ssl: {
     rejectUnauthorized: false, // Required for Supabase
   },
