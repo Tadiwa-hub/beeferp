@@ -113,17 +113,6 @@ const LoginPage = () => {
             </Link>
           </div>
         </div>
-
-        {/* Super Unobtrusive Compact Badges for Demo Credentials */}
-        <div className="bg-yellow-50/50 border border-yellow-100/60 rounded-xl p-3.5 mt-4 text-center">
-          <p className="text-[10px] text-yellow-800 font-bold mb-1.5 flex items-center justify-center gap-1">
-            🔑 Quick Demo Access
-          </p>
-          <div className="flex justify-center gap-2 font-mono text-[9px] text-yellow-800">
-            <span className="bg-white px-2 py-1 rounded border border-yellow-100">User: <strong className="text-yellow-900 selection:bg-yellow-200">admin</strong></span>
-            <span className="bg-white px-2 py-1 rounded border border-yellow-100">Pass: <strong className="text-yellow-900 selection:bg-yellow-200">Admin@123</strong></span>
-          </div>
-        </div>
       </div>
     </div>
   );

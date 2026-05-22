@@ -265,12 +265,12 @@ const DashboardPage = () => {
               </div>
               <div className="flex-1 overflow-auto p-2 space-y-2">
                 <p className="text-[10px] text-[#475569] leading-relaxed m-0">
-                  Your Feed Conversion Ratio (FCR) is <strong className="text-primary font-bold">{telemetry?.benchmarks?.user_fcr || '6.2'}</strong> vs the regional average of <strong className="text-[#64748B] font-bold">7.5</strong>. Lower FCR signifies highly efficient feed usage.
+                  Your Feed Conversion Ratio (FCR) is <strong className="text-primary font-bold">{telemetry?.benchmarks?.user_fcr || '6.2'}</strong> vs the regional average of <strong className="text-[#64748B] font-bold">{telemetry?.benchmarks?.industry_avg_fcr || '7.5'}</strong>. Lower FCR signifies highly efficient feed usage.
                 </p>
                 <div className="p-2 rounded-lg bg-green-50 border border-green-100">
                   <p className="text-[9px] font-bold text-green-800 m-0 flex items-center gap-1"><span>📈</span> ADG Metric</p>
                   <p className="text-[10px] text-green-900 mt-0.5 m-0 leading-snug">
-                    Your Average Daily Gain is <strong className="font-black">{telemetry?.benchmarks?.user_adg || '1.34'} kg/day</strong>, outperforming the industry standard of <strong>1.05 kg/day</strong> by +27%.
+                    Your Average Daily Gain is <strong className="font-black">{telemetry?.benchmarks?.user_adg || '1.34'} kg/day</strong> vs the industry standard of <strong>{telemetry?.benchmarks?.industry_avg_adg || '1.05'} kg/day</strong>.
                   </p>
                 </div>
                 <div className="flex justify-between items-center text-[8px] text-[#94A3B8] font-bold pt-1 border-t border-[#E2E8F0] mt-auto">
