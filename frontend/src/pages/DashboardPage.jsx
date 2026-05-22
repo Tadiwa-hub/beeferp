@@ -482,7 +482,7 @@ const DashboardPage = () => {
           <div className="flex-1 flex flex-col lg:flex-row gap-3 min-h-0">
             <div className="flex-[2] flex flex-col card p-3 min-h-0">
               <h3 className="text-[11px] font-bold text-primary mb-1 flex-shrink-0 flex items-center gap-1.5"><span>📈</span> 6-Month Cash Flow Forecast</h3>
-              <p className="text-[9px] text-[#64748B] mb-2 flex-shrink-0">Projected at 1.35 kg/day ADG on active cattle.</p>
+              <p className="text-[9px] text-[#64748B] mb-2 flex-shrink-0">Projected at {telemetry?.benchmarks?.user_adg || 1.35} kg/day ADG on active cattle.</p>
               <div className="w-full h-[250px] lg:h-auto lg:flex-1 lg:min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={forecast}>

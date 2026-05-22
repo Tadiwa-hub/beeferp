@@ -275,7 +275,8 @@ export const getAnalyticsOverview = async (req, res) => {
        LEFT JOIN LATERAL (
          SELECT weight_kg, recorded_date FROM weight_records 
          WHERE animal_id = w.animal_id ORDER BY recorded_date DESC LIMIT 1
-       ) w_last ON true`
+       ) w_last ON true`,
+       [req.user.id]
     );
     const weightMap = new Map(weightBounds.map(w => [w.animal_id, w]));
 

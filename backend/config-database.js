@@ -24,11 +24,23 @@ const ipv4Lookup = (hostname, options, callback) => {
 let poolConfig = {};
 
 if (process.env.SUPABASE_URL) {
-  const rawUrl = process.env.SUPABASE_URL.trim();
+  let rawUrl = process.env.SUPABASE_URL.trim();
+  
+  // Strip any existing sslmode parameter to prevent it from overriding our config
+  if (rawUrl.includes('sslmode=')) {
+    rawUrl = rawUrl.replace(/([\?&])sslmode=[^&]+(&?)/, '$1').replace(/[\?&]$/, '');
+  }
+
   // Log a masked version for debugging
   const maskedUrl = rawUrl.replace(/:([^:@]+)@/, ':****@');
   console.log(`🔌 Attempting connection using SUPABASE_URL: ${maskedUrl}`);
-  poolConfig = { connectionString: rawUrl };
+  
+  poolConfig = { 
+    connectionString: rawUrl,
+    ssl: {
+      rejectUnauthorized: false,
+    }
+  };
 } else {
   console.log(`🔌 Attempting connection using individual DB_ variables to host: ${process.env.DB_HOST}`);
   poolConfig = {
@@ -37,15 +49,15 @@ if (process.env.SUPABASE_URL) {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432'),
     database: process.env.DB_NAME,
+    ssl: {
+      rejectUnauthorized: false,
+    }
   };
 }
 
 // Create connection pool with forced IPv4 lookup and SSL
 const pool = new Pool({
   ...poolConfig,
-  ssl: {
-    rejectUnauthorized: false,
-  },
   max: 15,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
