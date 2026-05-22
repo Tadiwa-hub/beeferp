@@ -57,8 +57,8 @@ Analyze this data and provide 3 professional business insights.`;
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'http://localhost:5173', 
-            'X-Title': 'BeefERP', 
+            'HTTP-Referer': 'https://beeferp.pages.dev', 
+            'X-Title': 'BeefERP Enterprise', 
             'Content-Type': 'application/json'
           }
         }
@@ -166,8 +166,8 @@ Keep your answers concise, highly professional, and directly actionable. Limit r
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'http://localhost:5173', 
-            'X-Title': 'BeefERP Chat', 
+            'HTTP-Referer': 'https://beeferp.pages.dev', 
+            'X-Title': 'BeefERP Enterprise', 
             'Content-Type': 'application/json'
           }
         }
@@ -186,8 +186,8 @@ Keep your answers concise, highly professional, and directly actionable. Limit r
           {
             headers: {
               'Authorization': `Bearer ${apiKey}`,
-              'HTTP-Referer': 'http://localhost:5173', 
-              'X-Title': 'BeefERP Chat', 
+              'HTTP-Referer': 'https://beeferp.pages.dev', 
+              'X-Title': 'BeefERP Enterprise', 
               'Content-Type': 'application/json'
             }
           }
